@@ -1,0 +1,5 @@
+cloudflared tunnel --url http://localhost:8000
+
+Dannach den Webhook Link eintragen 
+
+https://developers.facebook.com/apps/1353196309894589/use_cases/customize/wa-settings/
