@@ -1,8 +1,8 @@
 """
-Bot-Logik: Steuert den Gespraechsfluss (State Machine).
+Bot-Logik: Steuert den Gespraechsfluss.
 
-Jeder Schritt beschreibt per Platzhalter-Antwort, welche Aktion
-an dieser Stelle spaeter ausgefuehrt wird.
+Die eigentliche Geschaeftslogik (vCard, Radicale, SMS-Versand) ist noch
+Platzhalter — der Bot antwortet aber bereits mit echten WhatsApp-Nachrichten.
 """
 
 from app.messenger import send_text, send_interactive_buttons
@@ -45,20 +45,13 @@ async def handle_text_message(sender: str, name: str, text: str) -> None:
     """Verarbeitet eine eingehende Textnachricht."""
     print(f"[BOT] Textnachricht: '{text}'")
 
-    # PLATZHALTER: Hier wuerde die Conversation-State-Machine greifen.
-    # Je nach aktuellem State des Users (z.B. MENU, AWAITING_CALLBACK_NUMBER,
-    # AWAITING_MESSAGE) wuerde unterschiedlich reagiert werden.
-
-    # Schritt 1: vCard-Erstellung / Update
-    print(f"[SCHRITT] vCard fuer {sender} ({name}) wuerde hier erstellt/aktualisiert.")
+    # PLATZHALTER: vCard + Radicale (laeuft im Hintergrund, User merkt nichts)
+    print(f"[STUB] vCard fuer {sender} ({name}) wuerde hier erstellt.")
     await create_vcard(phone_number=sender, display_name=name)
-
-    # Schritt 2: Radicale-Sync
-    print(f"[SCHRITT] Kontakt {sender} wuerde hier mit Radicale synchronisiert.")
+    print(f"[STUB] Radicale-Sync fuer {sender} wuerde hier laufen.")
     await sync_contact(phone_number=sender, display_name=name)
 
-    # Schritt 3: Begruessungs-Menu senden
-    print(f"[SCHRITT] Hauptmenu wuerde hier an {sender} gesendet.")
+    # Echte Antwort: Hauptmenu senden
     await send_welcome_menu(sender)
 
 
@@ -67,60 +60,95 @@ async def handle_button_reply(sender: str, name: str, button_id: str) -> None:
     print(f"[BOT] Button-Klick: {button_id}")
 
     if button_id == "btn_callback":
-        print(f"[SCHRITT] Rueckruf-Flow wuerde hier starten fuer {sender}.")
-        print(f"[SCHRITT] User wuerde nach Rufnummer-Bestaetigung gefragt.")
+        print(f"[STUB] Rueckruf-Flow: Hier wuerde die Nummer validiert und SMS ausgeloest.")
+        await send_interactive_buttons(
+            sender,
+            f"Sollen wir Sie unter Ihrer WhatsApp-Nummer zurueckrufen?",
+            [
+                {"id": "btn_confirm_number", "title": "Ja, bitte"},
+                {"id": "btn_other_number", "title": "Andere Nummer"},
+                {"id": "btn_cancel", "title": "Abbrechen"},
+            ],
+        )
+
+    elif button_id == "btn_confirm_number":
+        print(f"[STUB] Rueckruf bestaetigt — hier wuerde SMS/Benachrichtigung ausgeloest.")
         await send_text(
             sender,
-            f"[PLATZHALTER] Rueckruf-Flow: Ihre WhatsApp-Nummer ({sender}) wird als "
-            f"Rueckrufnummer verwendet. Bestaetigen oder neue Nummer eingeben."
+            "Vielen Dank. Sie werden so bald wie moeglich zurueckgerufen. \u2713",
+        )
+
+    elif button_id == "btn_other_number":
+        print(f"[STUB] User will andere Nummer angeben — State wechselt zu AWAITING_NUMBER.")
+        await send_text(
+            sender,
+            "Bitte geben Sie die Rufnummer ein, unter der Sie erreichbar sind:",
         )
 
     elif button_id == "btn_message":
-        print(f"[SCHRITT] Nachrichten-Flow wuerde hier starten fuer {sender}.")
-        print(f"[SCHRITT] User wuerde nach Rueckkanal gefragt (SMS/Anruf/Email).")
+        print(f"[STUB] Nachrichten-Flow: Hier wuerde der Rueckkanal abgefragt.")
+        await send_interactive_buttons(
+            sender,
+            "Wie moechten Sie kontaktiert werden?",
+            [
+                {"id": "btn_channel_sms", "title": "SMS"},
+                {"id": "btn_channel_email", "title": "E-Mail"},
+                {"id": "btn_cancel", "title": "Abbrechen"},
+            ],
+        )
+
+    elif button_id in ("btn_channel_sms", "btn_channel_email"):
+        channel = "SMS" if button_id == "btn_channel_sms" else "E-Mail"
+        print(f"[STUB] Kanal gewaehlt: {channel} — State wechselt zu AWAITING_MESSAGE.")
         await send_text(
             sender,
-            "[PLATZHALTER] Nachrichten-Flow: Bitte waehlen Sie den Rueckkanal "
-            "(SMS, Anruf oder E-Mail)."
+            f"Bitte geben Sie Ihre Nachricht ein (Rueckkanal: {channel}):",
         )
 
     elif button_id == "btn_cancel":
-        print(f"[SCHRITT] Abbruch durch User {sender}.")
-        await send_text(sender, "[PLATZHALTER] Chat wurde beendet. Auf Wiedersehen!")
+        await send_text(sender, "Chat beendet. Auf Wiedersehen!")
+
+    elif button_id == "btn_send_without_attachment":
+        print(f"[STUB] Nachricht ohne Anhang — hier wuerde SMS/Email versendet.")
+        await send_text(sender, "Vielen Dank. Ihre Nachricht wurde uebermittelt. \u2713")
 
     else:
         print(f"[BOT] Unbekannter Button: {button_id}")
+        await send_welcome_menu(sender)
 
 
 async def handle_list_reply(sender: str, name: str, list_id: str) -> None:
     """Verarbeitet eine Auswahl aus einer List Message."""
     print(f"[BOT] List-Auswahl: {list_id}")
-    print(f"[SCHRITT] Aktion fuer List-ID '{list_id}' wuerde hier ausgefuehrt.")
-    await send_text(sender, f"[PLATZHALTER] List-Auswahl '{list_id}' erhalten.")
+    await send_text(sender, f"Auswahl '{list_id}' erhalten.")
 
 
 async def handle_attachment(sender: str, media_type: str) -> None:
-    """Reagiert auf Medien-Anhaenge (Bilder, Dokumente etc.)."""
+    """Reagiert auf Medien-Anhaenge."""
     print(f"[BOT] Anhang erhalten: {media_type}")
-    print(f"[SCHRITT] Validierung: Anhaenge werden nicht unterstuetzt.")
-    print(f"[SCHRITT] User wuerde gefragt, ob Nachricht ohne Anhang gesendet werden soll.")
-    await send_text(
+    print(f"[STUB] Validierung: Anhaenge werden nicht unterstuetzt.")
+    await send_interactive_buttons(
         sender,
-        "[PLATZHALTER] Dateianhange werden nicht unterstuetzt. "
-        "Moechten Sie Ihre Nachricht stattdessen ohne Anhang verschicken?"
+        "Dateianhange werden leider nicht unterstuetzt.\n"
+        "Moechten Sie Ihre Nachricht ohne Anhang verschicken?",
+        [
+            {"id": "btn_send_without_attachment", "title": "Ohne Anhang senden"},
+            {"id": "btn_cancel", "title": "Abbrechen"},
+        ],
     )
 
 
 async def send_welcome_menu(sender: str) -> None:
     """Sendet das Hauptmenu mit den drei Optionen."""
-    print(f"[SCHRITT] Begruessungs-Menu wird an {sender} gesendet.")
-
     body = (
-        "Hallo, ich bin persoenlich nicht auf WhatsApp erreichbar.\n"
+        "Hallo, ich bin persoenlich nicht auf WhatsApp erreichbar.\n\n"
+        "\U0001f4f1 Mobil (SMS): 123456789\n"
+        "\u260e\ufe0f Festnetz: 0011223344\n"
+        "\U0001f4e7 Email: Assistenz@meine-mail.com\n\n"
         "Was moechten Sie tun?"
     )
     buttons = [
-        {"id": "btn_callback", "title": "Um Rueckruf bitten"},
+        {"id": "btn_callback", "title": "Rueckruf erbitten"},
         {"id": "btn_message", "title": "Nachricht senden"},
         {"id": "btn_cancel", "title": "Abbrechen"},
     ]

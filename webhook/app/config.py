@@ -1,4 +1,10 @@
 import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+# .env aus dem webhook-Verzeichnis laden
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 # --- Meta / WhatsApp API ---
 VERIFY_TOKEN = os.getenv("VERIFY_TOKEN", "MeinSuperGeheimerDevOpsToken123")
