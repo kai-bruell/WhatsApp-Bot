@@ -68,6 +68,18 @@ btn_send_title = Senden
 btn_new_message_title = Neu verfassen
 btn_without_attachment_title = Ohne Anhang
 
+[rate_limits]
+rate_limit_sms_user = Sie haben Ihr taegliches SMS-Limit erreicht. Bitte versuchen Sie es in {wait} erneut.
+rate_limit_sms_global = Das taegliche SMS-Kontingent ist erschoepft. Bitte versuchen Sie es in {wait} erneut oder nutzen Sie E-Mail.
+rate_limit_email_user = Sie haben Ihr taegliches E-Mail-Limit erreicht. Bitte versuchen Sie es in {wait} erneut.
+rate_limit_email_global = Das taegliche E-Mail-Kontingent ist erschoepft. Bitte versuchen Sie es in {wait} erneut.
+rate_limit_api_user = Sie senden zu viele Nachrichten. Bitte versuchen Sie es in {wait} erneut.
+rate_limit_api_global = Der Dienst ist derzeit ausgelastet. Bitte versuchen Sie es in {wait} erneut.
+callback_already_requested = Sie haben bereits einen Rueckruf angefordert. Bitte haben Sie etwas Geduld.
+wait_hours = ca. {count} Std.
+wait_minutes = ca. {count} Min.
+wait_seconds = ca. {count} Sek.
+
 [labels]
 label_sms = SMS
 label_email = E-Mail

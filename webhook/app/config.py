@@ -23,3 +23,14 @@ RADICALE_URL = os.getenv("RADICALE_URL", "http://localhost:5232")
 RADICALE_USER = os.getenv("RADICALE_USER", "bot_user")
 RADICALE_PASSWORD = os.getenv("RADICALE_PASSWORD", "passwort")
 RADICALE_ADDRESSBOOK = "contacts"
+
+# --- Rate Limits ---
+RATE_SMS_PER_USER_DAY = int(os.getenv("RATE_SMS_PER_USER_DAY", "10"))
+RATE_SMS_GLOBAL_DAY = int(os.getenv("RATE_SMS_GLOBAL_DAY", "100"))
+RATE_EMAIL_PER_USER_DAY = int(os.getenv("RATE_EMAIL_PER_USER_DAY", "10"))
+RATE_EMAIL_GLOBAL_DAY = int(os.getenv("RATE_EMAIL_GLOBAL_DAY", "300"))
+RATE_API_GLOBAL_HOUR = int(os.getenv("RATE_API_GLOBAL_HOUR", "300"))
+RATE_API_PER_USER_HOUR = int(os.getenv("RATE_API_PER_USER_HOUR", "10"))
+
+# --- Rate Limit DB ---
+RATE_LIMIT_DB = os.getenv("RATE_LIMIT_DB", str(Path(__file__).resolve().parent.parent / "rate_limit.db"))

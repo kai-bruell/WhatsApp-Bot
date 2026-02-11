@@ -12,6 +12,7 @@ from app.vcard import create_vcard
 from app.radicale import sync_contact
 from app.i18n import t, detect_lang
 from app.config import CONTACT_MOBILE, CONTACT_LANDLINE, CONTACT_EMAIL
+from app.rate_limit import limiter
 
 # ---------------------------------------------------------------------------
 # User-State: trackt pro Sender, in welchem Schritt er sich befindet.
@@ -23,6 +24,19 @@ user_state: dict[str, dict] = {}
 # {"step": "confirm_message", "channel": ..., "text": ...} — Bestaetigung erwartet
 
 _PHONE_RE = re.compile(r"^\+?\d[\d\s\-/]{6,18}\d$")
+
+
+# ---------------------------------------------------------------------------
+# Wartezeit-Formatierung
+# ---------------------------------------------------------------------------
+
+def _format_wait(seconds: int, lang: str) -> str:
+    """Formatiert Wartezeit als lesbaren String."""
+    if seconds >= 3600:
+        return t("wait_hours", lang, count=seconds // 3600)
+    if seconds >= 60:
+        return t("wait_minutes", lang, count=seconds // 60)
+    return t("wait_seconds", lang, count=seconds)
 
 
 # ---------------------------------------------------------------------------
@@ -59,6 +73,7 @@ async def _process_phone_number(sender: str, text: str) -> None:
 
     # Erfolg
     user_state.pop(sender, None)
+    limiter.record_callback(sender)
     print(f"[STUB] Rueckruf an {cleaned} wird veranlasst.")
     await send_interactive_buttons(
         sender,
@@ -132,6 +147,14 @@ async def handle_incoming_message(message: dict, contact_info: dict) -> None:
     msg_type = message.get("type", "unknown")
     contact_name = contact_info.get("profile", {}).get("name", "Unbekannt")
     lang = detect_lang(sender)
+
+    # --- API Rate Limit ---
+    api_result = limiter.check_api(sender)
+    if api_result:
+        err_key, wait_secs = api_result
+        await send_text(sender, t(err_key, lang, wait=_format_wait(wait_secs, lang)))
+        return
+    limiter.record_api(sender)
 
     print(f"[BOT] Nachricht von {sender} ({contact_name}), Typ: {msg_type}")
 
@@ -215,6 +238,10 @@ async def handle_button_reply(sender: str, name: str, button_id: str) -> None:
     lang = detect_lang(sender)
 
     if button_id == "btn_callback":
+        if limiter.has_callback(sender):
+            await send_text(sender, t("callback_already_requested", lang))
+            await send_welcome_menu(sender)
+            return
         await send_interactive_buttons(
             sender,
             t("ask_callback_number", lang, phone=sender),
@@ -227,6 +254,7 @@ async def handle_button_reply(sender: str, name: str, button_id: str) -> None:
 
     elif button_id == "btn_confirm_number":
         print(f"[STUB] Rueckruf bestaetigt — SMS/Benachrichtigung ausgeloest.")
+        limiter.record_callback(sender)
         user_state.pop(sender, None)
         await send_interactive_buttons(
             sender,
@@ -273,6 +301,21 @@ async def handle_button_reply(sender: str, name: str, button_id: str) -> None:
         state = user_state.get(sender, {})
         msg_text = state.get("text", "")
         channel = state.get("channel", "unbekannt")
+        limit_result = (
+            limiter.check_sms(sender) if channel == "sms"
+            else limiter.check_email(sender) if channel == "email"
+            else None
+        )
+        if limit_result:
+            err_key, wait_secs = limit_result
+            user_state.pop(sender, None)
+            await send_text(sender, t(err_key, lang, wait=_format_wait(wait_secs, lang)))
+            await send_welcome_menu(sender)
+            return
+        if channel == "sms":
+            limiter.record_sms(sender)
+        elif channel == "email":
+            limiter.record_email(sender)
         print(f"[STUB] Nachricht per {channel} versendet: {msg_text}")
         await _send_completion(sender)
 
@@ -281,6 +324,21 @@ async def handle_button_reply(sender: str, name: str, button_id: str) -> None:
         msg_text = state.get("text", "")
         channel = state.get("channel", "unbekannt")
         if msg_text:
+            limit_result = (
+                limiter.check_sms(sender) if channel == "sms"
+                else limiter.check_email(sender) if channel == "email"
+                else None
+            )
+            if limit_result:
+                err_key, wait_secs = limit_result
+                user_state.pop(sender, None)
+                await send_text(sender, t(err_key, lang, wait=_format_wait(wait_secs, lang)))
+                await send_welcome_menu(sender)
+                return
+            if channel == "sms":
+                limiter.record_sms(sender)
+            elif channel == "email":
+                limiter.record_email(sender)
             print(f"[STUB] Nachricht ohne Anhang per {channel} versendet: {msg_text}")
             await _send_completion(sender)
         else:

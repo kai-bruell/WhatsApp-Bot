@@ -68,6 +68,18 @@ btn_send_title = Send
 btn_new_message_title = Rewrite
 btn_without_attachment_title = Without attachment
 
+[rate_limits]
+rate_limit_sms_user = You have reached your daily SMS limit. Please try again in {wait}.
+rate_limit_sms_global = The daily SMS quota has been reached. Please try again in {wait} or use email instead.
+rate_limit_email_user = You have reached your daily email limit. Please try again in {wait}.
+rate_limit_email_global = The daily email quota has been reached. Please try again in {wait}.
+rate_limit_api_user = You are sending too many messages. Please try again in {wait}.
+rate_limit_api_global = The service is currently busy. Please try again in {wait}.
+callback_already_requested = You have already requested a callback. Please be patient.
+wait_hours = approx. {count} hr
+wait_minutes = approx. {count} min
+wait_seconds = approx. {count} sec
+
 [labels]
 label_sms = SMS
 label_email = Email
