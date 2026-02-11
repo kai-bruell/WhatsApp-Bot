@@ -10,6 +10,7 @@ import re
 from app.messenger import send_text, send_interactive_buttons
 from app.vcard import create_vcard
 from app.radicale import sync_contact
+from app.i18n import t, detect_lang
 
 # ---------------------------------------------------------------------------
 # User-State: trackt pro Sender, in welchem Schritt er sich befindet.
@@ -27,7 +28,7 @@ _PHONE_RE = re.compile(r"^\+?\d[\d\s\-/]{6,18}\d$")
 # Validierung
 # ---------------------------------------------------------------------------
 
-def _validate_sms(text: str) -> list[str]:
+def _validate_sms(text: str, lang: str) -> list[str]:
     """Prueft GSM-7-Kompatibilitaet und Zeichenlimit. Gibt Fehlerliste zurueck."""
     errors: list[str] = []
     gsm7_pattern = re.compile(
@@ -37,13 +38,9 @@ def _validate_sms(text: str) -> list[str]:
     limit = 160 if is_gsm7 else 70
 
     if not is_gsm7:
-        errors.append(
-            "**Illegale Zeichen:** Bitte verwenden Sie nur Standardbuchstaben."
-        )
+        errors.append(t("illegal_chars", lang))
     if len(text) > limit:
-        errors.append(
-            f"**Zeichenlimit ueberschritten:** Ihr Text hat {len(text)} Zeichen (max. {limit})."
-        )
+        errors.append(t("char_limit_exceeded", lang, count=len(text), limit=limit))
     return errors
 
 
@@ -53,12 +50,10 @@ def _validate_sms(text: str) -> list[str]:
 
 async def _process_phone_number(sender: str, text: str) -> None:
     """Validiert eine eingegebene Rufnummer."""
+    lang = detect_lang(sender)
     cleaned = text.strip()
     if not _PHONE_RE.match(cleaned):
-        await send_text(
-            sender,
-            "Ungueltige Rufnummer. Bitte erneut eingeben:",
-        )
+        await send_text(sender, t("invalid_phone", lang))
         return  # State bleibt auf awaiting_phone
 
     # Erfolg
@@ -66,29 +61,30 @@ async def _process_phone_number(sender: str, text: str) -> None:
     print(f"[STUB] Rueckruf an {cleaned} wird veranlasst.")
     await send_interactive_buttons(
         sender,
-        f"Rueckruf an {cleaned} wird veranlasst.",
+        t("callback_initiated", lang, phone=cleaned),
         [
-            {"id": "btn_more", "title": "Weitere Nachricht"},
-            {"id": "btn_end", "title": "Chat beenden"},
+            {"id": "btn_more", "title": t("btn_more_title", lang)},
+            {"id": "btn_end", "title": t("btn_end_title", lang)},
         ],
     )
 
 
 async def _process_message_text(sender: str, text: str) -> None:
     """Validiert eine eingegebene Nachricht (SMS/Email)."""
+    lang = detect_lang(sender)
     state = user_state[sender]
     channel = state["channel"]
 
     if channel == "sms":
-        errors = _validate_sms(text)
+        errors = _validate_sms(text, lang)
         if errors:
             msg = "\n".join(errors)
             await send_interactive_buttons(
                 sender,
-                f"Ihre Nachricht konnte nicht validiert werden:\n\n{msg}",
+                t("validation_failed", lang, errors=msg),
                 [
-                    {"id": "btn_new_message", "title": "Neu verfassen"},
-                    {"id": "btn_cancel", "title": "Abbrechen"},
+                    {"id": "btn_new_message", "title": t("btn_new_message_title", lang)},
+                    {"id": "btn_cancel", "title": t("btn_cancel_title", lang)},
                 ],
             )
             return  # State bleibt auf awaiting_message
@@ -99,27 +95,28 @@ async def _process_message_text(sender: str, text: str) -> None:
         "channel": channel,
         "text": text,
     }
-    label = "SMS" if channel == "sms" else "E-Mail"
+    label = t("label_sms", lang) if channel == "sms" else t("label_email", lang)
     await send_interactive_buttons(
         sender,
-        f"Ihre Nachricht per {label}:\n\n\"{text}\"\n\nSoll diese Nachricht gesendet werden?",
+        t("confirm_message", lang, label=label, text=text),
         [
-            {"id": "btn_send", "title": "Senden"},
-            {"id": "btn_new_message", "title": "Neu verfassen"},
-            {"id": "btn_cancel", "title": "Abbrechen"},
+            {"id": "btn_send", "title": t("btn_send_title", lang)},
+            {"id": "btn_new_message", "title": t("btn_new_message_title", lang)},
+            {"id": "btn_cancel", "title": t("btn_cancel_title", lang)},
         ],
     )
 
 
 async def _send_completion(sender: str) -> None:
     """Sendet den Abschluss-Flow und loescht den State."""
+    lang = detect_lang(sender)
     user_state.pop(sender, None)
     await send_interactive_buttons(
         sender,
-        "Vielen Dank. Ihre Nachricht wurde uebermittelt. \u2713",
+        t("message_sent", lang),
         [
-            {"id": "btn_more", "title": "Weitere Nachricht"},
-            {"id": "btn_end", "title": "Chat beenden"},
+            {"id": "btn_more", "title": t("btn_more_title", lang)},
+            {"id": "btn_end", "title": t("btn_end_title", lang)},
         ],
     )
 
@@ -133,6 +130,7 @@ async def handle_incoming_message(message: dict, contact_info: dict) -> None:
     sender = message.get("from", "unbekannt")
     msg_type = message.get("type", "unknown")
     contact_name = contact_info.get("profile", {}).get("name", "Unbekannt")
+    lang = detect_lang(sender)
 
     print(f"[BOT] Nachricht von {sender} ({contact_name}), Typ: {msg_type}")
 
@@ -161,11 +159,10 @@ async def handle_incoming_message(message: dict, contact_info: dict) -> None:
         print(f"[BOT] Unbekannter Nachrichtentyp: {msg_type}")
         await send_interactive_buttons(
             sender,
-            "Dieser Nachrichtentyp wird leider nicht unterstuetzt.\n"
-            "Bitte geben Sie Ihre Nachricht als Text ein.",
+            t("unsupported_type", lang),
             [
-                {"id": "btn_new_message", "title": "Neu verfassen"},
-                {"id": "btn_cancel", "title": "Abbrechen"},
+                {"id": "btn_new_message", "title": t("btn_new_message_title", lang)},
+                {"id": "btn_cancel", "title": t("btn_cancel_title", lang)},
             ],
         )
 
@@ -173,6 +170,7 @@ async def handle_incoming_message(message: dict, contact_info: dict) -> None:
 async def handle_text_message(sender: str, name: str, text: str) -> None:
     """Verarbeitet eine eingehende Textnachricht."""
     print(f"[BOT] Textnachricht: '{text}'")
+    lang = detect_lang(sender)
 
     state = user_state.get(sender)
 
@@ -192,11 +190,11 @@ async def handle_text_message(sender: str, name: str, text: str) -> None:
             # Unerwarteter Freitext — Bestaetigungs-Buttons erneut senden
             await send_interactive_buttons(
                 sender,
-                "Bitte waehlen Sie eine der Optionen:",
+                t("choose_option", lang),
                 [
-                    {"id": "btn_send", "title": "Senden"},
-                    {"id": "btn_new_message", "title": "Neu verfassen"},
-                    {"id": "btn_cancel", "title": "Abbrechen"},
+                    {"id": "btn_send", "title": t("btn_send_title", lang)},
+                    {"id": "btn_new_message", "title": t("btn_new_message_title", lang)},
+                    {"id": "btn_cancel", "title": t("btn_cancel_title", lang)},
                 ],
             )
             return
@@ -213,15 +211,16 @@ async def handle_text_message(sender: str, name: str, text: str) -> None:
 async def handle_button_reply(sender: str, name: str, button_id: str) -> None:
     """Verarbeitet einen Button-Klick."""
     print(f"[BOT] Button-Klick: {button_id}")
+    lang = detect_lang(sender)
 
     if button_id == "btn_callback":
         await send_interactive_buttons(
             sender,
-            "Sollen wir Sie unter Ihrer WhatsApp-Nummer zurueckrufen?",
+            t("ask_callback_number", lang, phone=sender),
             [
-                {"id": "btn_confirm_number", "title": "Ja, bitte"},
-                {"id": "btn_other_number", "title": "Andere Nummer"},
-                {"id": "btn_cancel", "title": "Abbrechen"},
+                {"id": "btn_confirm_number", "title": t("btn_confirm_number_title", lang)},
+                {"id": "btn_other_number", "title": t("btn_other_number_title", lang)},
+                {"id": "btn_cancel", "title": t("btn_cancel_title", lang)},
             ],
         )
 
@@ -230,54 +229,44 @@ async def handle_button_reply(sender: str, name: str, button_id: str) -> None:
         user_state.pop(sender, None)
         await send_interactive_buttons(
             sender,
-            "Vielen Dank. Sie werden so bald wie moeglich zurueckgerufen.",
+            t("callback_confirmed", lang),
             [
-                {"id": "btn_more", "title": "Weitere Nachricht"},
-                {"id": "btn_end", "title": "Chat beenden"},
+                {"id": "btn_more", "title": t("btn_more_title", lang)},
+                {"id": "btn_end", "title": t("btn_end_title", lang)},
             ],
         )
 
     elif button_id == "btn_other_number":
         user_state[sender] = {"step": "awaiting_phone"}
-        await send_text(
-            sender,
-            "Bitte geben Sie die Rufnummer ein, unter der Sie erreichbar sind:",
-        )
+        await send_text(sender, t("enter_phone", lang))
 
     elif button_id == "btn_message":
         await send_interactive_buttons(
             sender,
-            "Wie moechten Sie kontaktiert werden?",
+            t("choose_channel", lang),
             [
-                {"id": "btn_channel_sms", "title": "SMS"},
-                {"id": "btn_channel_email", "title": "E-Mail"},
-                {"id": "btn_cancel", "title": "Abbrechen"},
+                {"id": "btn_channel_sms", "title": t("btn_sms_title", lang)},
+                {"id": "btn_channel_email", "title": t("btn_email_title", lang)},
+                {"id": "btn_cancel", "title": t("btn_cancel_title", lang)},
             ],
         )
 
     elif button_id == "btn_channel_sms":
         user_state[sender] = {"step": "awaiting_message", "channel": "sms"}
-        await send_text(
-            sender,
-            "Bitte geben Sie Ihre Nachricht ein (Rueckkanal: SMS):",
-        )
+        channel_label = t("label_sms", lang)
+        await send_text(sender, t("enter_message", lang, channel=channel_label))
 
     elif button_id == "btn_channel_email":
         user_state[sender] = {"step": "awaiting_message", "channel": "email"}
-        await send_text(
-            sender,
-            "Bitte geben Sie Ihre Nachricht ein (Rueckkanal: E-Mail):",
-        )
+        channel_label = t("label_email", lang)
+        await send_text(sender, t("enter_message", lang, channel=channel_label))
 
     elif button_id == "btn_new_message":
         state = user_state.get(sender, {})
         channel = state.get("channel", "sms")
         user_state[sender] = {"step": "awaiting_message", "channel": channel}
-        label = "SMS" if channel == "sms" else "E-Mail"
-        await send_text(
-            sender,
-            f"Bitte geben Sie Ihre Nachricht neu ein (Rueckkanal: {label}):",
-        )
+        label = t("label_sms", lang) if channel == "sms" else t("label_email", lang)
+        await send_text(sender, t("reenter_message", lang, channel=label))
 
     elif button_id == "btn_send":
         state = user_state.get(sender, {})
@@ -296,7 +285,7 @@ async def handle_button_reply(sender: str, name: str, button_id: str) -> None:
         else:
             print(f"[STUB] Kein Nachrichtentext im State — Abschluss ohne Versand.")
             user_state.pop(sender, None)
-            await send_text(sender, "Es liegt keine Nachricht zum Senden vor.")
+            await send_text(sender, t("no_message_to_send", lang))
             await send_welcome_menu(sender)
 
     elif button_id == "btn_more":
@@ -305,11 +294,11 @@ async def handle_button_reply(sender: str, name: str, button_id: str) -> None:
 
     elif button_id == "btn_end":
         user_state.pop(sender, None)
-        await send_text(sender, "Auf Wiedersehen!")
+        await send_text(sender, t("goodbye", lang))
 
     elif button_id == "btn_cancel":
         user_state.pop(sender, None)
-        await send_text(sender, "Chat beendet. Auf Wiedersehen!")
+        await send_text(sender, t("goodbye_cancel", lang))
 
     else:
         print(f"[BOT] Unbekannter Button: {button_id}")
@@ -319,12 +308,14 @@ async def handle_button_reply(sender: str, name: str, button_id: str) -> None:
 async def handle_list_reply(sender: str, name: str, list_id: str) -> None:
     """Verarbeitet eine Auswahl aus einer List Message."""
     print(f"[BOT] List-Auswahl: {list_id}")
-    await send_text(sender, f"Auswahl '{list_id}' erhalten.")
+    lang = detect_lang(sender)
+    await send_text(sender, t("list_selection", lang, selection=list_id))
 
 
 async def handle_attachment(sender: str, media_type: str, caption: str | None = None) -> None:
     """Reagiert auf Medien-Anhaenge."""
     print(f"[BOT] Anhang erhalten: {media_type}, Caption: {caption!r}")
+    lang = detect_lang(sender)
 
     state = user_state.get(sender)
 
@@ -333,16 +324,15 @@ async def handle_attachment(sender: str, media_type: str, caption: str | None = 
             # Caption vorhanden — bei SMS erst validieren
             channel = state["channel"]
             if channel == "sms":
-                errors = _validate_sms(caption)
+                errors = _validate_sms(caption, lang)
                 if errors:
                     msg = "\n".join(errors)
                     await send_interactive_buttons(
                         sender,
-                        f"Anhaenge werden nicht unterstuetzt und der Text "
-                        f"konnte nicht validiert werden:\n\n{msg}",
+                        t("attachment_validation_failed", lang, errors=msg),
                         [
-                            {"id": "btn_new_message", "title": "Neu verfassen"},
-                            {"id": "btn_cancel", "title": "Abbrechen"},
+                            {"id": "btn_new_message", "title": t("btn_new_message_title", lang)},
+                            {"id": "btn_cancel", "title": t("btn_cancel_title", lang)},
                         ],
                     )
                     return
@@ -355,47 +345,36 @@ async def handle_attachment(sender: str, media_type: str, caption: str | None = 
             }
             await send_interactive_buttons(
                 sender,
-                "Anhaenge werden leider nicht unterstuetzt.\n"
-                "Moechten Sie Ihre Nachricht ohne Anhang senden?\n\n"
-                f"Ihr Text:\n\"{caption}\"",
+                t("attachment_send_without", lang, text=caption),
                 [
-                    {"id": "btn_send_without_attachment", "title": "Ohne Anhang"},
-                    {"id": "btn_new_message", "title": "Neu verfassen"},
-                    {"id": "btn_cancel", "title": "Abbrechen"},
+                    {"id": "btn_send_without_attachment", "title": t("btn_without_attachment_title", lang)},
+                    {"id": "btn_new_message", "title": t("btn_new_message_title", lang)},
+                    {"id": "btn_cancel", "title": t("btn_cancel_title", lang)},
                 ],
             )
         else:
             # Kein Text dabei — nur Hinweis, Text einzugeben
             await send_interactive_buttons(
                 sender,
-                "Anhaenge werden leider nicht unterstuetzt.\n"
-                "Bitte geben Sie Ihre Nachricht als Text ein.",
+                t("attachment_enter_text", lang),
                 [
-                    {"id": "btn_new_message", "title": "Neu verfassen"},
-                    {"id": "btn_cancel", "title": "Abbrechen"},
+                    {"id": "btn_new_message", "title": t("btn_new_message_title", lang)},
+                    {"id": "btn_cancel", "title": t("btn_cancel_title", lang)},
                 ],
             )
     else:
         # Kein aktiver Flow — Hinweis + zurueck zum Menue
-        await send_text(
-            sender,
-            "Dateianhange werden leider nicht unterstuetzt.",
-        )
+        await send_text(sender, t("attachment_not_supported", lang))
         await send_welcome_menu(sender)
 
 
 async def send_welcome_menu(sender: str) -> None:
     """Sendet das Hauptmenu mit den drei Optionen."""
-    body = (
-        "Hallo, ich bin persoenlich nicht auf WhatsApp erreichbar.\n\n"
-        "\U0001f4f1 Mobil (SMS): 123456789\n"
-        "\u260e\ufe0f Festnetz: 0011223344\n"
-        "\U0001f4e7 Email: Assistenz@meine-mail.com\n\n"
-        "Was moechten Sie tun?"
-    )
+    lang = detect_lang(sender)
+    body = t("welcome_body", lang)
     buttons = [
-        {"id": "btn_callback", "title": "Rueckruf erbitten"},
-        {"id": "btn_message", "title": "Nachricht senden"},
-        {"id": "btn_cancel", "title": "Abbrechen"},
+        {"id": "btn_callback", "title": t("btn_callback_title", lang)},
+        {"id": "btn_message", "title": t("btn_message_title", lang)},
+        {"id": "btn_cancel", "title": t("btn_cancel_title", lang)},
     ]
     await send_interactive_buttons(sender, body, buttons)

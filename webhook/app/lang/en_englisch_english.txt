@@ -1,0 +1,73 @@
+# English texts for the WhatsApp bot
+# Format: key = value (single line) or key = \n    multiline (indented)
+
+[messages]
+invalid_phone = Invalid phone number. Please try again:
+callback_initiated = Callback to {phone} has been initiated.
+illegal_chars = **Illegal characters:** Please use standard letters only.
+char_limit_exceeded = **Character limit exceeded:** Your text has {count} characters (max. {limit}).
+validation_failed =
+    Your message could not be validated:
+
+    {errors}
+confirm_message =
+    Your message via {label}:
+
+    "{text}"
+
+    Should this message be sent?
+message_sent = Thank you. Your message has been sent. ✓
+ask_callback_number = Should we call you back on your WhatsApp number ({phone})?
+callback_confirmed = Thank you. You will be called back as soon as possible.
+enter_phone = Please enter the phone number where you can be reached:
+choose_channel = How would you like to be contacted?
+enter_message = Please enter your message (reply channel: {channel}):
+reenter_message = Please re-enter your message (reply channel: {channel}):
+choose_option = Please choose one of the options:
+welcome_body =
+    Hello, I am not personally available on WhatsApp.
+
+    📱 Mobile (SMS): 123456789
+    ☎️ Landline: 0011223344
+    📧 Email: Assistenz@meine-mail.com
+
+    What would you like to do?
+list_selection = Selection '{selection}' received.
+attachment_validation_failed =
+    Attachments are not supported and the text could not be validated:
+
+    {errors}
+attachment_send_without =
+    Attachments are unfortunately not supported.
+    Would you like to send your message without the attachment?
+
+    Your text:
+    "{text}"
+attachment_enter_text =
+    Attachments are unfortunately not supported.
+    Please enter your message as text.
+attachment_not_supported = File attachments are unfortunately not supported.
+unsupported_type =
+    This message type is unfortunately not supported.
+    Please enter your message as text.
+goodbye = Goodbye!
+goodbye_cancel = Chat ended. Goodbye!
+no_message_to_send = There is no message to send.
+
+[buttons]
+btn_more_title = Another message
+btn_end_title = End chat
+btn_callback_title = Request callback
+btn_message_title = Send message
+btn_cancel_title = Cancel
+btn_confirm_number_title = Yes, please
+btn_other_number_title = Other number
+btn_sms_title = SMS
+btn_email_title = Email
+btn_send_title = Send
+btn_new_message_title = Rewrite
+btn_without_attachment_title = Without attachment
+
+[labels]
+label_sms = SMS
+label_email = Email

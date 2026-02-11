@@ -1,0 +1,73 @@
+# Deutsche Texte fuer den WhatsApp-Bot
+# Format: key = value (einzeilig) oder key = \n    mehrzeilig (eingerueckt)
+
+[messages]
+invalid_phone = Ungueltige Rufnummer. Bitte erneut eingeben:
+callback_initiated = Rueckruf an {phone} wird veranlasst.
+illegal_chars = **Illegale Zeichen:** Bitte verwenden Sie nur Standardbuchstaben.
+char_limit_exceeded = **Zeichenlimit ueberschritten:** Ihr Text hat {count} Zeichen (max. {limit}).
+validation_failed =
+    Ihre Nachricht konnte nicht validiert werden:
+
+    {errors}
+confirm_message =
+    Ihre Nachricht per {label}:
+
+    "{text}"
+
+    Soll diese Nachricht gesendet werden?
+message_sent = Vielen Dank. Ihre Nachricht wurde uebermittelt. ✓
+ask_callback_number = Sollen wir Sie unter Ihrer WhatsApp-Nummer ({phone}) zurueckrufen?
+callback_confirmed = Vielen Dank. Sie werden so bald wie moeglich zurueckgerufen.
+enter_phone = Bitte geben Sie die Rufnummer ein, unter der Sie erreichbar sind:
+choose_channel = Wie moechten Sie kontaktiert werden?
+enter_message = Bitte geben Sie Ihre Nachricht ein (Rueckkanal: {channel}):
+reenter_message = Bitte geben Sie Ihre Nachricht neu ein (Rueckkanal: {channel}):
+choose_option = Bitte waehlen Sie eine der Optionen:
+welcome_body =
+    Hallo, ich bin persoenlich nicht auf WhatsApp erreichbar.
+
+    📱 Mobil (SMS): 123456789
+    ☎️ Festnetz: 0011223344
+    📧 Email: Assistenz@meine-mail.com
+
+    Was moechten Sie tun?
+list_selection = Auswahl '{selection}' erhalten.
+attachment_validation_failed =
+    Anhaenge werden nicht unterstuetzt und der Text konnte nicht validiert werden:
+
+    {errors}
+attachment_send_without =
+    Anhaenge werden leider nicht unterstuetzt.
+    Moechten Sie Ihre Nachricht ohne Anhang senden?
+
+    Ihr Text:
+    "{text}"
+attachment_enter_text =
+    Anhaenge werden leider nicht unterstuetzt.
+    Bitte geben Sie Ihre Nachricht als Text ein.
+attachment_not_supported = Dateianhange werden leider nicht unterstuetzt.
+unsupported_type =
+    Dieser Nachrichtentyp wird leider nicht unterstuetzt.
+    Bitte geben Sie Ihre Nachricht als Text ein.
+goodbye = Auf Wiedersehen!
+goodbye_cancel = Chat beendet. Auf Wiedersehen!
+no_message_to_send = Es liegt keine Nachricht zum Senden vor.
+
+[buttons]
+btn_more_title = Weitere Nachricht
+btn_end_title = Chat beenden
+btn_callback_title = Rueckruf erbitten
+btn_message_title = Nachricht senden
+btn_cancel_title = Abbrechen
+btn_confirm_number_title = Ja, bitte
+btn_other_number_title = Andere Nummer
+btn_sms_title = SMS
+btn_email_title = E-Mail
+btn_send_title = Senden
+btn_new_message_title = Neu verfassen
+btn_without_attachment_title = Ohne Anhang
+
+[labels]
+label_sms = SMS
+label_email = E-Mail
