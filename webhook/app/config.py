@@ -3,8 +3,11 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# .env aus dem webhook-Verzeichnis laden
-load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+# .env nur laden, wenn Datei existiert (lokale Entwicklung).
+# In Docker werden Env-Vars via docker-compose injiziert.
+_env_file = Path(__file__).resolve().parent.parent / ".env"
+if _env_file.exists():
+    load_dotenv(_env_file)
 
 # --- Meta / WhatsApp API ---
 VERIFY_TOKEN = os.getenv("VERIFY_TOKEN", "MeinSuperGeheimerDevOpsToken123")
@@ -33,4 +36,4 @@ RATE_API_GLOBAL_HOUR = int(os.getenv("RATE_API_GLOBAL_HOUR", "300"))
 RATE_API_PER_USER_HOUR = int(os.getenv("RATE_API_PER_USER_HOUR", "10"))
 
 # --- Rate Limit DB ---
-RATE_LIMIT_DB = os.getenv("RATE_LIMIT_DB", str(Path(__file__).resolve().parent.parent / "rate_limit.db"))
+RATE_LIMIT_DB = os.getenv("RATE_LIMIT_DB", "/app/data/rate_limit.db")
