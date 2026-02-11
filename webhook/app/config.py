@@ -13,6 +13,7 @@ if _env_file.exists():
 VERIFY_TOKEN = os.getenv("VERIFY_TOKEN", "MeinSuperGeheimerDevOpsToken123")
 WHATSAPP_TOKEN = os.getenv("WHATSAPP_TOKEN", "DEIN_SYSTEM_TOKEN")
 PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID", "953289931205420")
+APP_SECRET = os.getenv("APP_SECRET", "")
 META_API_VERSION = "v18.0"
 META_API_URL = f"https://graph.facebook.com/{META_API_VERSION}/{PHONE_NUMBER_ID}/messages"
 

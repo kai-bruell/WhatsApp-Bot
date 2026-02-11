@@ -31,6 +31,7 @@ All settings are managed via environment variables in `.env`. See `.env.example`
 | `VERIFY_TOKEN` | Meta webhook verification token |
 | `WHATSAPP_TOKEN` | Meta WhatsApp Cloud API system token |
 | `PHONE_NUMBER_ID` | WhatsApp Business phone number ID |
+| `APP_SECRET` | Facebook App Secret (for data deletion callback signature validation) |
 | `CONTACT_MOBILE` | Mobile number shown in welcome message |
 | `CONTACT_LANDLINE` | Landline number shown in welcome message |
 | `CONTACT_EMAIL` | Email address shown in welcome message |
@@ -59,8 +60,18 @@ meta/
         ├── radicale.py     # CardDAV integration
         ├── vcard.py        # vCard generation
         ├── rate_limit.py   # SQLite-based rate limiter
+        ├── data_deletion.py # Meta data deletion callback
         └── lang/           # Translation files
 ```
+
+## Data Deletion Callback
+
+Meta requires a Data Deletion Callback URL for platform apps. When a user removes the app via Facebook, Meta sends a signed `POST /datadeletion` request. The server validates the signature, stores the deletion request, and returns a status URL.
+
+- **`POST /datadeletion`** — Server-to-server callback from Meta (validates `signed_request` via HMAC-SHA256)
+- **`GET /datadeletion?id=CODE`** — HTML status page showing deletion confirmation
+
+Requires `APP_SECRET` to be set in `.env`.
 
 ## Useful Commands
 
