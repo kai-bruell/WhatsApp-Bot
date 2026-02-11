@@ -27,9 +27,9 @@ choose_option = Bitte waehlen Sie eine der Optionen:
 welcome_body =
     Hallo, ich bin persoenlich nicht auf WhatsApp erreichbar.
 
-    📱 Mobil (SMS): 123456789
-    ☎️ Festnetz: 0011223344
-    📧 Email: Assistenz@meine-mail.com
+    📱 Mobil (SMS): {mobile}
+    ☎️ Festnetz: {landline}
+    📧 Email: {email}
 
     Was moechten Sie tun?
 list_selection = Auswahl '{selection}' erhalten.

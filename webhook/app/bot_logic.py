@@ -11,6 +11,7 @@ from app.messenger import send_text, send_interactive_buttons
 from app.vcard import create_vcard
 from app.radicale import sync_contact
 from app.i18n import t, detect_lang
+from app.config import CONTACT_MOBILE, CONTACT_LANDLINE, CONTACT_EMAIL
 
 # ---------------------------------------------------------------------------
 # User-State: trackt pro Sender, in welchem Schritt er sich befindet.
@@ -371,7 +372,7 @@ async def handle_attachment(sender: str, media_type: str, caption: str | None = 
 async def send_welcome_menu(sender: str) -> None:
     """Sendet das Hauptmenu mit den drei Optionen."""
     lang = detect_lang(sender)
-    body = t("welcome_body", lang)
+    body = t("welcome_body", lang, mobile=CONTACT_MOBILE, landline=CONTACT_LANDLINE, email=CONTACT_EMAIL)
     buttons = [
         {"id": "btn_callback", "title": t("btn_callback_title", lang)},
         {"id": "btn_message", "title": t("btn_message_title", lang)},
