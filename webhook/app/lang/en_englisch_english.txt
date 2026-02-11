@@ -54,6 +54,20 @@ goodbye = Goodbye!
 goodbye_cancel = Chat ended. Goodbye!
 no_message_to_send = There is no message to send.
 
+[consent]
+consent_ask =
+    Before we continue: May we store your contact details
+    to assist you better?
+
+    Privacy policy: {privacy_url}
+policy_menu =
+    Privacy & Legal:
+
+    Privacy policy: {privacy_url}
+    Terms of service: {terms_url}
+delete_data_confirm = Do you really want to delete all stored data? This action cannot be undone.
+delete_data_done = Your data has been successfully deleted. You will be asked for consent again with your next message.
+
 [buttons]
 btn_more_title = Another message
 btn_end_title = End chat
@@ -67,6 +81,10 @@ btn_email_title = Email
 btn_send_title = Send
 btn_new_message_title = Rewrite
 btn_without_attachment_title = Without attachment
+btn_consent_yes_title = Yes, I agree
+btn_consent_no_title = No, thanks
+btn_delete_data_title = Delete my data
+btn_confirm_delete_title = Yes, delete
 
 [rate_limits]
 rate_limit_sms_user = You have reached your daily SMS limit. Please try again in {wait}.

@@ -32,6 +32,7 @@ All settings are managed via environment variables in `.env`. See `.env.example`
 | `WHATSAPP_TOKEN` | Meta WhatsApp Cloud API system token |
 | `PHONE_NUMBER_ID` | WhatsApp Business phone number ID |
 | `APP_SECRET` | Facebook App Secret (for data deletion callback signature validation) |
+| `BASE_URL` | Public base URL for links in bot messages (e.g. `https://your-domain.example.com`) |
 | `CONTACT_MOBILE` | Mobile number shown in welcome message |
 | `CONTACT_LANDLINE` | Landline number shown in welcome message |
 | `CONTACT_EMAIL` | Email address shown in welcome message |
@@ -61,8 +62,25 @@ meta/
         ├── vcard.py        # vCard generation
         ├── rate_limit.py   # SQLite-based rate limiter
         ├── data_deletion.py # Meta data deletion callback
-        └── lang/           # Translation files
+        ├── consent.py      # GDPR consent store (SQLite)
+        ├── lang/           # Translation files
+        └── static/         # Static HTML pages (privacy, terms)
 ```
+
+## Consent Flow
+
+Before storing contact data (CardDAV/Radicale), the bot asks for GDPR consent. Users can type "policy", "datenschutz", "privacy", "agb", "terms", or "tos" at any time to view legal information and optionally delete their data.
+
+- First message from a new number triggers a consent prompt (Yes/No buttons + privacy link)
+- "Yes" stores consent, syncs contact to Radicale, shows welcome menu
+- "No" stores refusal, shows welcome menu without syncing
+- Policy keyword shows privacy/terms links; if consented, also a "Delete my data" button
+- After deletion, the next message triggers a fresh consent prompt
+
+## Static Pages
+
+- **`GET /privacy`** — Privacy policy (placeholder)
+- **`GET /terms`** — Terms of service (placeholder)
 
 ## Data Deletion Callback
 

@@ -22,6 +22,9 @@ CONTACT_MOBILE = os.getenv("CONTACT_MOBILE", "123456789")
 CONTACT_LANDLINE = os.getenv("CONTACT_LANDLINE", "0011223344")
 CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "Assistenz@meine-mail.com")
 
+# --- Base URL (fuer Links in Bot-Nachrichten) ---
+BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
+
 # --- Radicale (CardDAV) ---
 RADICALE_URL = os.getenv("RADICALE_URL", "http://localhost:5232")
 RADICALE_USER = os.getenv("RADICALE_USER", "bot_user")

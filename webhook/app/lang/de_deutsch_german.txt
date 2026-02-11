@@ -54,6 +54,20 @@ goodbye = Auf Wiedersehen!
 goodbye_cancel = Chat beendet. Auf Wiedersehen!
 no_message_to_send = Es liegt keine Nachricht zum Senden vor.
 
+[consent]
+consent_ask =
+    Bevor wir fortfahren: Duerfen wir Ihre Kontaktdaten speichern,
+    um Ihnen besser helfen zu koennen?
+
+    Datenschutzrichtlinie: {privacy_url}
+policy_menu =
+    Datenschutz & Rechtliches:
+
+    Datenschutzrichtlinie: {privacy_url}
+    AGB: {terms_url}
+delete_data_confirm = Moechten Sie wirklich alle gespeicherten Daten loeschen lassen? Dieser Vorgang kann nicht rueckgaengig gemacht werden.
+delete_data_done = Ihre Daten wurden erfolgreich geloescht. Bei Ihrer naechsten Nachricht werden Sie erneut um Einwilligung gebeten.
+
 [buttons]
 btn_more_title = Weitere Nachricht
 btn_end_title = Chat beenden
@@ -67,6 +81,10 @@ btn_email_title = E-Mail
 btn_send_title = Senden
 btn_new_message_title = Neu verfassen
 btn_without_attachment_title = Ohne Anhang
+btn_consent_yes_title = Ja, einverstanden
+btn_consent_no_title = Nein, danke
+btn_delete_data_title = Daten loeschen
+btn_confirm_delete_title = Ja, loeschen
 
 [rate_limits]
 rate_limit_sms_user = Sie haben Ihr taegliches SMS-Limit erreicht. Bitte versuchen Sie es in {wait} erneut.

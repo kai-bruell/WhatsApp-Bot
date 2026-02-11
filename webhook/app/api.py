@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from fastapi import APIRouter, Request, Response
 from fastapi.responses import HTMLResponse
 
@@ -6,6 +8,8 @@ from app.bot_logic import handle_incoming_message
 from app.data_deletion import deletion_store, parse_signed_request, purge_user_data
 
 router = APIRouter()
+
+_STATIC_DIR = Path(__file__).parent / "static"
 
 
 # --- Webhook ---
@@ -49,6 +53,23 @@ async def webhook(request: Request):
                     await handle_incoming_message(message, contact_info)
 
     return {"status": "ok"}
+
+
+# --- Statische Rechtsseiten ---
+
+
+@router.get("/privacy")
+async def privacy():
+    """Datenschutzrichtlinie."""
+    html = (_STATIC_DIR / "privacy.html").read_text(encoding="utf-8")
+    return HTMLResponse(content=html)
+
+
+@router.get("/terms")
+async def terms():
+    """Allgemeine Geschaeftsbedingungen."""
+    html = (_STATIC_DIR / "terms.html").read_text(encoding="utf-8")
+    return HTMLResponse(content=html)
 
 
 # --- Data Deletion Callback ---

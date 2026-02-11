@@ -9,10 +9,11 @@ import re
 
 from app.messenger import send_text, send_interactive_buttons
 from app.vcard import create_vcard
-from app.radicale import sync_contact
+from app.radicale import sync_contact, delete_contact
 from app.i18n import t, detect_lang
-from app.config import CONTACT_MOBILE, CONTACT_LANDLINE, CONTACT_EMAIL
+from app.config import CONTACT_MOBILE, CONTACT_LANDLINE, CONTACT_EMAIL, BASE_URL
 from app.rate_limit import limiter
+from app.consent import consent_store
 
 # ---------------------------------------------------------------------------
 # User-State: trackt pro Sender, in welchem Schritt er sich befindet.
@@ -24,6 +25,45 @@ user_state: dict[str, dict] = {}
 # {"step": "confirm_message", "channel": ..., "text": ...} — Bestaetigung erwartet
 
 _PHONE_RE = re.compile(r"^\+?\d[\d\s\-/]{6,18}\d$")
+
+_POLICY_KEYWORDS = {"policy", "datenschutz", "privacy", "agb", "terms", "tos"}
+
+
+# ---------------------------------------------------------------------------
+# Consent-Helfer
+# ---------------------------------------------------------------------------
+
+async def _ask_consent(sender: str) -> None:
+    """Sendet die Consent-Frage mit Privacy-Link und Ja/Nein-Buttons."""
+    lang = detect_lang(sender)
+    privacy_url = f"{BASE_URL}/privacy"
+    await send_interactive_buttons(
+        sender,
+        t("consent_ask", lang, privacy_url=privacy_url),
+        [
+            {"id": "btn_consent_yes", "title": t("btn_consent_yes_title", lang)},
+            {"id": "btn_consent_no", "title": t("btn_consent_no_title", lang)},
+        ],
+    )
+
+
+async def _show_policy_menu(sender: str) -> None:
+    """Zeigt Links zu Datenschutz/AGB und optional 'Daten loeschen'-Button."""
+    lang = detect_lang(sender)
+    privacy_url = f"{BASE_URL}/privacy"
+    terms_url = f"{BASE_URL}/terms"
+
+    buttons: list[dict] = []
+    if consent_store.has_consented(sender):
+        buttons.append({"id": "btn_delete_data", "title": t("btn_delete_data_title", lang)})
+    buttons.append({"id": "btn_more", "title": t("btn_more_title", lang)})
+    buttons.append({"id": "btn_end", "title": t("btn_end_title", lang)})
+
+    await send_interactive_buttons(
+        sender,
+        t("policy_menu", lang, privacy_url=privacy_url, terms_url=terms_url),
+        buttons,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -223,11 +263,22 @@ async def handle_text_message(sender: str, name: str, text: str) -> None:
             )
             return
 
-    # --- Kein State → vCard/Radicale + Willkommensmenue ---
-    print(f"[STUB] vCard fuer {sender} ({name}) wuerde hier erstellt.")
-    await create_vcard(phone_number=sender, display_name=name)
-    print(f"[STUB] Radicale-Sync fuer {sender} wuerde hier laufen.")
-    await sync_contact(phone_number=sender, display_name=name)
+    # --- Policy-Keyword → Rechtsinfos anzeigen ---
+    if text.strip().lower() in _POLICY_KEYWORDS:
+        await _show_policy_menu(sender)
+        return
+
+    # --- Consent-Check ---
+    if not consent_store.has_record(sender):
+        # Noch nie gefragt → Consent einholen
+        await _ask_consent(sender)
+        return
+
+    # Consent vorhanden → nur bei Zustimmung synchronisieren
+    if consent_store.has_consented(sender):
+        print(f"[CONSENT] vCard-Sync fuer {sender} ({name})")
+        await create_vcard(phone_number=sender, display_name=name)
+        await sync_contact(phone_number=sender, display_name=name)
 
     await send_welcome_menu(sender)
 
@@ -346,6 +397,35 @@ async def handle_button_reply(sender: str, name: str, button_id: str) -> None:
             user_state.pop(sender, None)
             await send_text(sender, t("no_message_to_send", lang))
             await send_welcome_menu(sender)
+
+    elif button_id == "btn_consent_yes":
+        consent_store.store_consent(sender, True)
+        print(f"[CONSENT] {sender} hat zugestimmt — vCard-Sync")
+        await create_vcard(phone_number=sender, display_name=name)
+        await sync_contact(phone_number=sender, display_name=name)
+        await send_welcome_menu(sender)
+
+    elif button_id == "btn_consent_no":
+        consent_store.store_consent(sender, False)
+        print(f"[CONSENT] {sender} hat abgelehnt — kein Sync")
+        await send_welcome_menu(sender)
+
+    elif button_id == "btn_delete_data":
+        await send_interactive_buttons(
+            sender,
+            t("delete_data_confirm", lang),
+            [
+                {"id": "btn_confirm_delete", "title": t("btn_confirm_delete_title", lang)},
+                {"id": "btn_cancel", "title": t("btn_cancel_title", lang)},
+            ],
+        )
+
+    elif button_id == "btn_confirm_delete":
+        consent_store.revoke_consent(sender)
+        consent_store.delete_record(sender)
+        await delete_contact(sender)
+        print(f"[CONSENT] Daten fuer {sender} geloescht")
+        await send_text(sender, t("delete_data_done", lang))
 
     elif button_id == "btn_more":
         user_state.pop(sender, None)
