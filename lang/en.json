@@ -1,0 +1,36 @@
+{
+  "meta": {
+    "name": "English",
+    "code": "en"
+  },
+  "commands": {
+    "START": ["start", "hello", "hi"],
+    "STOP": ["stop", "cancel", "quit"],
+    "HELP": ["help"],
+    "CONTACT": ["contact"]
+  },
+  "messages": {
+    "welcome": "Hello $NAME! 👋\nI am $OWNER_NAME's assistant.\n\nCommands: /start, /stop, /contact",
+    "btn_msg": "Send Message",
+    "btn_contact": "Contact Info",
+    "menu_prompt": "Sure. What is it about? (e.g. Project, Job offer)",
+    "menu_contact_text": "Here are the details:\n📧 $EMAIL\n🌐 $WEBSITE",
+    "ask_name_confirm": "I detected your name as *$NAME*. Is that correct?",
+    "btn_yes_correct": "Yes, correct",
+    "btn_change_name": "Change Name",
+    "btn_cancel": "Cancel",
+    "ask_name_manual": "Please enter your full name:",
+    "ask_email": "Great. What is your email address?",
+    "email_invalid": "That doesn't look like a valid email. Please try again.",
+    "summary": "Summary:\n👤 Name: $NAME\n📧 Mail: $EMAIL\n📝 Reason: $REASON",
+    "ask_sms_optin": "May I send you an SMS when $OWNER_NAME replies? To which number?",
+    "btn_sms_current": "To $PHONE",
+    "btn_sms_other": "Other number...",
+    "btn_no_sms": "No thanks",
+    "ask_new_phone": "Please enter the mobile number (e.g. +1...):",
+    "phone_invalid": "Invalid format. Please use international format +1...",
+    "final_success": "Thank you, $NAME! Your message has been sent.",
+    "stop_msg": "🛑 Stopped. Type /start to restart.",
+    "completed_hint": "We already have your message. Type /start to create a new one."
+  }
+}

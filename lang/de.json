@@ -1,0 +1,36 @@
+{
+  "meta": {
+    "name": "Deutsch",
+    "code": "de"
+  },
+  "commands": {
+    "START": ["start", "hallo", "moin", "hey"],
+    "STOP": ["stop", "stopp", "abbrechen", "halt"],
+    "HELP": ["help", "hilfe"],
+    "CONTACT": ["kontakt", "info"]
+  },
+  "messages": {
+    "welcome": "Hallo $NAME! 👋\nHier ist der Assistent von $OWNER_NAME.\nIch nehme dein Anliegen auf.\n\nBefehle: /start, /stop, /kontakt",
+    "btn_msg": "Nachricht senden",
+    "btn_contact": "Kontaktdaten",
+    "menu_prompt": "Alles klar. Worum geht es kurz? (z.B. Projektanfrage, Jobangebot)",
+    "menu_contact_text": "Hier sind die Daten:\n📧 $EMAIL\n🌐 $WEBSITE",
+    "ask_name_confirm": "Ich habe deinen Namen als *$NAME* erkannt. Ist das korrekt?",
+    "btn_yes_correct": "Ja, ist korrekt",
+    "btn_change_name": "Namen ändern",
+    "btn_cancel": "Abbrechen",
+    "ask_name_manual": "Bitte gib deinen vollständigen Namen ein:",
+    "ask_email": "Super. Unter welcher E-Mail-Adresse können wir dich erreichen?",
+    "email_invalid": "Das sah nicht wie eine gültige E-Mail aus. Bitte versuche es noch einmal.",
+    "summary": "Zusammenfassung:\n👤 Name: $NAME\n📧 Mail: $EMAIL\n📝 Grund: $REASON",
+    "ask_sms_optin": "Darf ich dir eine SMS senden, wenn $OWNER_NAME antwortet? Auf welche Nummer?",
+    "btn_sms_current": "An $PHONE",
+    "btn_sms_other": "Andere Nummer...",
+    "btn_no_sms": "Nein, danke",
+    "ask_new_phone": "Bitte gib die gewünschte Handynummer ein (z.B. +49...):",
+    "phone_invalid": "Ungültiges Format. Bitte im Format +49... eingeben.",
+    "final_success": "Vielen Dank, $NAME! Deine Nachricht wurde übermittelt.",
+    "stop_msg": "🛑 Vorgang abgebrochen. Tippe /start für einen Neustart.",
+    "completed_hint": "Deine Nachricht liegt uns bereits vor. Tippe /start für eine neue Anfrage."
+  }
+}

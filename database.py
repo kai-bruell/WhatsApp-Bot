@@ -1,0 +1,70 @@
+import sqlite3
+import json
+from config import Config
+
+def get_db():
+    conn = sqlite3.connect(Config.DB_PATH, check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_db():
+    db = get_db()
+    
+    # Sessions: Jetzt mit 'language'
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS sessions (
+            phone TEXT PRIMARY KEY, 
+            step TEXT, 
+            context TEXT,
+            language TEXT DEFAULT 'en'
+        )
+    """)
+    
+    # Leads
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS leads (
+            phone TEXT PRIMARY KEY, 
+            name TEXT, 
+            email TEXT, 
+            reason TEXT,
+            sms_number TEXT,
+            sms_optin INTEGER DEFAULT 0,
+            status TEXT DEFAULT 'new',
+            language TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
+    db.execute("CREATE TABLE IF NOT EXISTS processed_messages (msg_id TEXT PRIMARY KEY, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)")
+    db.commit()
+
+def is_msg_processed(msg_id):
+    db = get_db()
+    try:
+        db.execute("INSERT INTO processed_messages (msg_id) VALUES (?)", (msg_id,))
+        db.commit()
+        return False
+    except sqlite3.IntegrityError:
+        return True
+
+def get_session(phone):
+    res = get_db().execute("SELECT step, context, language FROM sessions WHERE phone = ?", (phone,)).fetchone()
+    if res:
+        return res["step"], json.loads(res["context"]), res["language"]
+    return "START", {}, None # None = Sprache noch nicht gesetzt
+
+def update_session(phone, step, context, language=None):
+    db = get_db()
+    # Bestehende Sprache holen, falls language=None
+    if language is None:
+        curr = db.execute("SELECT language FROM sessions WHERE phone = ?", (phone,)).fetchone()
+        language = curr["language"] if curr else "en"
+        
+    db.execute("INSERT OR REPLACE INTO sessions VALUES (?, ?, ?, ?)", 
+               (phone, step, json.dumps(context), language))
+    db.commit()
+
+def clear_session(phone):
+    # Reset auf START, behalte aber Sprache bei, wenn möglich
+    _, _, lang = get_session(phone)
+    update_session(phone, "START", {}, lang or "en")
