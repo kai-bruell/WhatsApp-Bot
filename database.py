@@ -9,16 +9,25 @@ def get_db():
 
 def init_db():
     db = get_db()
-    
+
+    db.execute("PRAGMA journal_mode=WAL")
+
     # Sessions: Jetzt mit 'language'
     db.execute("""
         CREATE TABLE IF NOT EXISTS sessions (
-            phone TEXT PRIMARY KEY, 
-            step TEXT, 
+            phone TEXT PRIMARY KEY,
+            step TEXT,
             context TEXT,
-            language TEXT DEFAULT 'en'
+            language TEXT DEFAULT 'en',
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     """)
+
+    # Migration: updated_at nachrüsten falls Tabelle schon existiert
+    try:
+        db.execute("ALTER TABLE sessions ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP")
+    except sqlite3.OperationalError:
+        pass  # Spalte existiert bereits
     
     # Leads
     db.execute("""
@@ -60,7 +69,7 @@ def update_session(phone, step, context, language=None):
         curr = db.execute("SELECT language FROM sessions WHERE phone = ?", (phone,)).fetchone()
         language = curr["language"] if curr else "en"
         
-    db.execute("INSERT OR REPLACE INTO sessions VALUES (?, ?, ?, ?)", 
+    db.execute("INSERT OR REPLACE INTO sessions VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)",
                (phone, step, json.dumps(context), language))
     db.commit()
 
