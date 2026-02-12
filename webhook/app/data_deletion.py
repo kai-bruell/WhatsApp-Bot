@@ -9,19 +9,32 @@ import base64
 import hashlib
 import hmac
 import json
-import sqlite3
 import uuid
+from collections.abc import Callable
 from datetime import datetime, timezone
 
-from app.config import APP_SECRET, RATE_LIMIT_DB
+from app.db import get_db
+from app.config import APP_SECRET
+from app.consent import consent_store
+from app.radicale import delete_contact
+from app.rate_limit import limiter
+
+# Callback fuer user_state-Cleanup (wird von bot_logic registriert,
+# vermeidet Circular-Import).
+_state_cleanup: Callable[[str], None] | None = None
+
+
+def register_state_cleanup(fn: Callable[[str], None]) -> None:
+    """Registriert eine Funktion zum Bereinigen des User-State bei Loeschung."""
+    global _state_cleanup
+    _state_cleanup = fn
 
 
 class DataDeletionStore:
     """SQLite-Store fuer Data-Deletion-Requests (teilt DB mit RateLimiter)."""
 
-    def __init__(self, db_path: str = RATE_LIMIT_DB) -> None:
-        self._conn = sqlite3.connect(db_path, check_same_thread=False)
-        self._conn.execute("PRAGMA journal_mode=WAL")
+    def __init__(self) -> None:
+        self._conn = get_db()
         self._init_db()
 
     def _init_db(self) -> None:
@@ -78,7 +91,6 @@ def parse_signed_request(signed_request: str) -> dict | None:
 
         encoded_sig, encoded_payload = parts
 
-        # Base64url-Decode (Meta nutzt URL-safe Base64 ohne Padding)
         sig = base64.urlsafe_b64decode(encoded_sig + "==")
         payload_bytes = base64.urlsafe_b64decode(encoded_payload + "==")
 
@@ -94,9 +106,25 @@ def parse_signed_request(signed_request: str) -> dict | None:
         return None
 
 
-def purge_user_data(user_id: str) -> None:
-    """Loescht nutzerbezogene Daten. Aktuell Log-only (kein FB-user_id-Mapping)."""
+async def purge_by_phone(phone: str) -> None:
+    """Zentrale Loeschfunktion: entfernt alle personenbezogenen Daten eines Nutzers."""
+    print(f"[DATA DELETION] purge_by_phone({phone}) — starte Loeschung")
+    consent_store.revoke_consent(phone)
+    consent_store.delete_record(phone)
+    await delete_contact(phone)
+    limiter.purge_user(phone)
+    if _state_cleanup:
+        _state_cleanup(phone)
+    print(f"[DATA DELETION] purge_by_phone({phone}) — abgeschlossen")
+
+
+async def purge_user_data(user_id: str) -> None:
+    """Loescht nutzerbezogene Daten via Meta-Callback (best-effort)."""
     print(f"[DATA DELETION] Loeschanfrage fuer Facebook user_id={user_id}")
+    if consent_store.has_record(user_id):
+        await purge_by_phone(user_id)
+    else:
+        print(f"[DATA DELETION] Kein Datensatz fuer user_id={user_id} gefunden (best-effort)")
 
 
 deletion_store = DataDeletionStore()

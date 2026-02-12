@@ -3,12 +3,11 @@ Rate Limiter — SQLite-persistenter Zaehler fuer SMS, Email, API und Callbacks.
 
 Prueft Rolling-Window-Limits pro Sender und global.
 Alle Schwellwerte werden aus config.py (Environment) gelesen.
-Die SQLite-Datenbank ueberlebt Neustarts.
 """
 
-import sqlite3
 import time
 
+from app.db import get_db
 from app.config import (
     RATE_SMS_PER_USER_DAY,
     RATE_SMS_GLOBAL_DAY,
@@ -16,7 +15,6 @@ from app.config import (
     RATE_EMAIL_GLOBAL_DAY,
     RATE_API_GLOBAL_HOUR,
     RATE_API_PER_USER_HOUR,
-    RATE_LIMIT_DB,
 )
 
 _DAY = 86_400
@@ -24,9 +22,8 @@ _HOUR = 3_600
 
 
 class RateLimiter:
-    def __init__(self, db_path: str = RATE_LIMIT_DB) -> None:
-        self._conn = sqlite3.connect(db_path, check_same_thread=False)
-        self._conn.execute("PRAGMA journal_mode=WAL")
+    def __init__(self) -> None:
+        self._conn = get_db()
         self._init_db()
         self._cleanup()
 
@@ -123,22 +120,26 @@ class RateLimiter:
     def record_api(self, sender: str) -> None:
         self._record(f"api:user:{sender}", "api:global")
 
-    # -- Callbacks (Deduplizierung) --
+    # -- Callbacks --
 
-    def has_callback(self, sender: str) -> bool:
-        """Prueft, ob der Sender bereits einen Rueckruf angefordert hat."""
-        row = self._conn.execute(
-            "SELECT 1 FROM callbacks WHERE sender = ?", (sender,),
-        ).fetchone()
-        return row is not None
+    def callback_count(self, sender: str) -> int:
+        """Gibt die Anzahl der Rueckruf-Anforderungen im 24h-Fenster zurueck."""
+        return self._count(f"callback:user:{sender}", _DAY)
 
     def record_callback(self, sender: str) -> None:
         """Speichert eine Rueckruf-Anforderung."""
+        self._record(f"callback:user:{sender}")
+
+    # -- Datenloeschung --
+
+    def purge_user(self, phone: str) -> None:
+        """Loescht alle Rate-Limit- und Callback-Daten eines Nutzers."""
         self._conn.execute(
-            "INSERT OR IGNORE INTO callbacks (sender, requested_at) VALUES (?, ?)",
-            (sender, time.time()),
+            "DELETE FROM rate_events WHERE bucket LIKE ?", (f"%{phone}%",),
         )
+        self._conn.execute("DELETE FROM callbacks WHERE sender = ?", (phone,))
         self._conn.commit()
+        print(f"[RATE LIMIT] purge_user({phone})")
 
 
 limiter = RateLimiter()

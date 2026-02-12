@@ -41,3 +41,10 @@ RATE_API_PER_USER_HOUR = int(os.getenv("RATE_API_PER_USER_HOUR", "10"))
 
 # --- Rate Limit DB ---
 RATE_LIMIT_DB = os.getenv("RATE_LIMIT_DB", "/app/data/rate_limit.db")
+
+# --- Abgeleitete URLs ---
+PRIVACY_URL = f"{BASE_URL}/privacy"
+TERMS_URL = f"{BASE_URL}/terms"
+
+# --- Bot-Konstanten ---
+MAX_CALLBACKS_DAY = 2

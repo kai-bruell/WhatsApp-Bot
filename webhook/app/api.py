@@ -5,7 +5,12 @@ from fastapi.responses import HTMLResponse
 
 from app.config import VERIFY_TOKEN
 from app.bot_logic import handle_incoming_message
-from app.data_deletion import deletion_store, parse_signed_request, purge_user_data
+from app.data_deletion import (
+    deletion_store,
+    parse_signed_request,
+    purge_by_phone,
+    purge_user_data,
+)
 
 router = APIRouter()
 
@@ -41,9 +46,20 @@ async def webhook(request: Request):
         for change in entry.get("changes", []):
             value = change.get("value", {})
 
-            # Status-Updates (sent, delivered, read) ignorieren
+            # Status-Updates: bei Sperrung/Block automatisch Daten loeschen
             if "statuses" in value:
-                print(f"[STATUS] Status-Update erhalten: {value['statuses']}")
+                for status in value["statuses"]:
+                    if status.get("status") == "failed":
+                        errors = status.get("errors", [])
+                        for err in errors:
+                            code = err.get("code", 0)
+                            # 131031 = user blocked business
+                            # 368 = temporarily blocked for policy violations
+                            if code in (131031, 368):
+                                recipient = status.get("recipient_id", "")
+                                if recipient:
+                                    print(f"[STATUS] Block erkannt (code={code}) fuer {recipient}")
+                                    await purge_by_phone(recipient)
                 continue
 
             # Nachrichten verarbeiten
@@ -96,7 +112,7 @@ async def data_deletion_callback(request: Request):
 
     user_id = str(payload.get("user_id", ""))
     code = deletion_store.create(user_id)
-    purge_user_data(user_id)
+    await purge_user_data(user_id)
     deletion_store.mark_completed(code)
 
     status_url = str(request.url_for("data_deletion_status")) + f"?id={code}"

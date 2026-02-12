@@ -1,21 +1,17 @@
 """
 Consent-Store — Verwaltet DSGVO-Einwilligungen in einer SQLite-Tabelle.
-
-Teilt die Datenbank mit dem RateLimiter (RATE_LIMIT_DB).
 """
 
-import sqlite3
 from datetime import datetime, timezone
 
-from app.config import RATE_LIMIT_DB
+from app.db import get_db
 
 
 class ConsentStore:
     """SQLite-Store fuer Consent-Records (teilt DB mit RateLimiter)."""
 
-    def __init__(self, db_path: str = RATE_LIMIT_DB) -> None:
-        self._conn = sqlite3.connect(db_path, check_same_thread=False)
-        self._conn.execute("PRAGMA journal_mode=WAL")
+    def __init__(self) -> None:
+        self._conn = get_db()
         self._init_db()
 
     def _init_db(self) -> None:

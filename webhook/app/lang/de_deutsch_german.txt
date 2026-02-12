@@ -24,14 +24,7 @@ choose_channel = Wie moechten Sie kontaktiert werden?
 enter_message = Bitte geben Sie Ihre Nachricht ein (Rueckkanal: {channel}):
 reenter_message = Bitte geben Sie Ihre Nachricht neu ein (Rueckkanal: {channel}):
 choose_option = Bitte waehlen Sie eine der Optionen:
-welcome_body =
-    Hallo, ich bin persoenlich nicht auf WhatsApp erreichbar.
-
-    📱 Mobil (SMS): {mobile}
-    ☎️ Festnetz: {landline}
-    📧 Email: {email}
-
-    Was moechten Sie tun?
+welcome_body = Was moechten Sie tun?
 list_selection = Auswahl '{selection}' erhalten.
 attachment_validation_failed =
     Anhaenge werden nicht unterstuetzt und der Text konnte nicht validiert werden:
@@ -56,15 +49,25 @@ no_message_to_send = Es liegt keine Nachricht zum Senden vor.
 
 [consent]
 consent_ask =
-    Bevor wir fortfahren: Duerfen wir Ihre Kontaktdaten speichern,
-    um Ihnen besser helfen zu koennen?
+    Hallo, ich bin persoenlich nicht auf WhatsApp erreichbar.
 
-    Datenschutzrichtlinie: {privacy_url}
+    📱 Mobil (SMS): {mobile}
+    ☎️ Festnetz: {landline}
+    📧 Email: {email}
+
+    Moechten Sie mir direkt hier eine Nachricht hinterlassen?
+
+    Damit ich Ihre Daten (Name, Telefon, E-Mail) speichern und Ihre Anfrage bearbeiten darf, bestaetigen Sie bitte kurz meine AGB und Datenschutzbestimmungen. Im Anschluss schaltet sich das Nachrichtenfeld frei.
+
+    {privacy_url}
+    {terms_url}
 policy_menu =
     Datenschutz & Rechtliches:
 
     Datenschutzrichtlinie: {privacy_url}
     AGB: {terms_url}
+consent_accepted_body = Vielen Dank. Ich habe Ihren Kontakt eingespeichert. Was moechten Sie tun?
+consent_declined_body = Alles klar. Was moechten Sie tun?
 delete_data_confirm = Moechten Sie wirklich alle gespeicherten Daten loeschen lassen? Dieser Vorgang kann nicht rueckgaengig gemacht werden.
 delete_data_done = Ihre Daten wurden erfolgreich geloescht. Bei Ihrer naechsten Nachricht werden Sie erneut um Einwilligung gebeten.
 
@@ -81,8 +84,8 @@ btn_email_title = E-Mail
 btn_send_title = Senden
 btn_new_message_title = Neu verfassen
 btn_without_attachment_title = Ohne Anhang
-btn_consent_yes_title = Ja, einverstanden
-btn_consent_no_title = Nein, danke
+btn_consent_yes_title = Akzeptieren
+btn_consent_no_title = Nicht Speichern
 btn_delete_data_title = Daten loeschen
 btn_confirm_delete_title = Ja, loeschen
 
@@ -93,7 +96,10 @@ rate_limit_email_user = Sie haben Ihr taegliches E-Mail-Limit erreicht. Bitte ve
 rate_limit_email_global = Das taegliche E-Mail-Kontingent ist erschoepft. Bitte versuchen Sie es in {wait} erneut.
 rate_limit_api_user = Sie senden zu viele Nachrichten. Bitte versuchen Sie es in {wait} erneut.
 rate_limit_api_global = Der Dienst ist derzeit ausgelastet. Bitte versuchen Sie es in {wait} erneut.
-callback_already_requested = Sie haben bereits einen Rueckruf angefordert. Bitte haben Sie etwas Geduld.
+callback_already_requested = Sie haben bereits einen Rueckruf angefordert. Moechten Sie lieber auf einer anderen Telefonnummer angerufen werden?
+callback_limit_reached = Sie haben Ihr Rueckruf-Kontingent fuer heute aufgebraucht. Bitte versuchen Sie es morgen erneut.
+btn_change_number_title = Nummer aendern
+btn_no_thanks_title = Nein, danke
 wait_hours = ca. {count} Std.
 wait_minutes = ca. {count} Min.
 wait_seconds = ca. {count} Sek.

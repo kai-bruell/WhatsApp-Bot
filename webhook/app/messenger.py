@@ -52,20 +52,3 @@ async def send_interactive_buttons(to: str, body_text: str, buttons: list[dict])
     })
 
 
-async def send_list_message(to: str, body_text: str, button_text: str, sections: list[dict]) -> None:
-    """Sendet eine List Message (Auswahl-Menu)."""
-    print(f"[MESSENGER] send_list_message -> {to}")
-    await _post({
-        "messaging_product": "whatsapp",
-        "recipient_type": "individual",
-        "to": to,
-        "type": "interactive",
-        "interactive": {
-            "type": "list",
-            "body": {"text": body_text},
-            "action": {
-                "button": button_text,
-                "sections": sections,
-            },
-        },
-    })

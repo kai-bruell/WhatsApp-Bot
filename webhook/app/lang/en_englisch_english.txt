@@ -24,14 +24,7 @@ choose_channel = How would you like to be contacted?
 enter_message = Please enter your message (reply channel: {channel}):
 reenter_message = Please re-enter your message (reply channel: {channel}):
 choose_option = Please choose one of the options:
-welcome_body =
-    Hello, I am not personally available on WhatsApp.
-
-    📱 Mobile (SMS): {mobile}
-    ☎️ Landline: {landline}
-    📧 Email: {email}
-
-    What would you like to do?
+welcome_body = What would you like to do?
 list_selection = Selection '{selection}' received.
 attachment_validation_failed =
     Attachments are not supported and the text could not be validated:
@@ -56,15 +49,25 @@ no_message_to_send = There is no message to send.
 
 [consent]
 consent_ask =
-    Before we continue: May we store your contact details
-    to assist you better?
+    Hello, I am not personally available on WhatsApp.
 
-    Privacy policy: {privacy_url}
+    📱 Mobile (SMS): {mobile}
+    ☎️ Landline: {landline}
+    📧 Email: {email}
+
+    Would you like to leave me a message right here?
+
+    In order to store your data (name, phone, email) and process your enquiry, please confirm my terms of service and privacy policy. The message field will unlock afterwards.
+
+    {privacy_url}
+    {terms_url}
 policy_menu =
     Privacy & Legal:
 
     Privacy policy: {privacy_url}
     Terms of service: {terms_url}
+consent_accepted_body = Thank you. I have saved your contact. What would you like to do?
+consent_declined_body = Understood. What would you like to do?
 delete_data_confirm = Do you really want to delete all stored data? This action cannot be undone.
 delete_data_done = Your data has been successfully deleted. You will be asked for consent again with your next message.
 
@@ -81,8 +84,8 @@ btn_email_title = Email
 btn_send_title = Send
 btn_new_message_title = Rewrite
 btn_without_attachment_title = Without attachment
-btn_consent_yes_title = Yes, I agree
-btn_consent_no_title = No, thanks
+btn_consent_yes_title = Accept
+btn_consent_no_title = Don't Store
 btn_delete_data_title = Delete my data
 btn_confirm_delete_title = Yes, delete
 
@@ -93,7 +96,10 @@ rate_limit_email_user = You have reached your daily email limit. Please try agai
 rate_limit_email_global = The daily email quota has been reached. Please try again in {wait}.
 rate_limit_api_user = You are sending too many messages. Please try again in {wait}.
 rate_limit_api_global = The service is currently busy. Please try again in {wait}.
-callback_already_requested = You have already requested a callback. Please be patient.
+callback_already_requested = You have already requested a callback. Would you like to be called on a different number?
+callback_limit_reached = You have used up your callback allowance for today. Please try again tomorrow.
+btn_change_number_title = Change number
+btn_no_thanks_title = No, thanks
 wait_hours = approx. {count} hr
 wait_minutes = approx. {count} min
 wait_seconds = approx. {count} sec
