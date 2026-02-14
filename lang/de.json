@@ -22,15 +22,19 @@
     "ask_name_manual": "Bitte gib deinen vollständigen Namen ein:",
     "ask_email": "Super. Unter welcher E-Mail-Adresse können wir dich erreichen?",
     "email_invalid": "Das sah nicht wie eine gültige E-Mail aus. Bitte versuche es noch einmal.",
-    "summary": "Zusammenfassung:\n👤 Name: $NAME\n📧 Mail: $EMAIL\n📝 Grund: $REASON",
-    "ask_sms_optin": "Darf ich dir eine SMS senden, wenn $OWNER_NAME antwortet? Auf welche Nummer?",
-    "btn_sms_current": "An $PHONE",
-    "btn_sms_other": "Andere Nummer...",
-    "btn_no_sms": "Nein, danke",
-    "ask_new_phone": "Bitte gib die gewünschte Handynummer ein (z.B. +49...):",
+    "summary": "Zusammenfassung:\n👤 Name: $NAME\n📧 Mail: $USER_EMAIL\n📝 Grund: $REASON",
+    
+    "ask_phone_optin": "Möchtest du noch eine Telefonnummer für Rückfragen hinterlassen?",
+    "btn_use_wa_num": "$PHONE",
+    "btn_type_num": "Andere Nummer",
+    "btn_no_num": "Nein, nur E-Mail",
+    
+    "ask_new_phone": "Bitte gib die gewünschte Rufnummer ein (z.B. +49...):",
     "phone_invalid": "Ungültiges Format. Bitte im Format +49... eingeben.",
-    "final_success": "Vielen Dank, $NAME! Deine Nachricht wurde übermittelt.",
+    
+    "final_success": "Vielen Dank, $NAME! Alles ist gespeichert. Ich melde mich bald.",
     "stop_msg": "🛑 Vorgang abgebrochen. Tippe /start für einen Neustart.",
-    "completed_hint": "Deine Nachricht liegt uns bereits vor. Tippe /start für eine neue Anfrage."
+    "completed_hint": "Deine Nachricht liegt uns bereits vor. Tippe /start für eine neue Anfrage.",
+    "email_send_failed": "Deine Anfrage wurde gespeichert, aber die Benachrichtigung konnte nicht zugestellt werden ($REASON). Wir kümmern uns darum."
   }
 }

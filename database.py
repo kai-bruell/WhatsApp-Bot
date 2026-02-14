@@ -32,17 +32,24 @@ def init_db():
     # Leads
     db.execute("""
         CREATE TABLE IF NOT EXISTS leads (
-            phone TEXT PRIMARY KEY, 
-            name TEXT, 
-            email TEXT, 
+            phone TEXT PRIMARY KEY,
+            name TEXT,
+            email TEXT,
             reason TEXT,
             sms_number TEXT,
             sms_optin INTEGER DEFAULT 0,
+            call_optin INTEGER DEFAULT 0,
             status TEXT DEFAULT 'new',
             language TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     """)
+
+    # Migration: call_optin nachrüsten falls Tabelle schon existiert
+    try:
+        db.execute("ALTER TABLE leads ADD COLUMN call_optin INTEGER DEFAULT 0")
+    except sqlite3.OperationalError:
+        pass
     
     db.execute("CREATE TABLE IF NOT EXISTS processed_messages (msg_id TEXT PRIMARY KEY, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)")
     db.commit()
