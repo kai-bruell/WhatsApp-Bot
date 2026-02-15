@@ -2,3 +2,6 @@ __pycache__/
 .env
 data/*.db
 venv/
+.claude/settings.local.json
+legal/TERMS.md
+legal/PRIVACY.md

@@ -1,7 +1,11 @@
 from fastapi import FastAPI, Request, Response
-from database import init_db, is_msg_processed
+from fastapi.responses import JSONResponse
+from database import init_db, is_msg_processed, delete_user_data
 from logic import handle_message
 from config import Config
+import hashlib
+import hmac
+import json
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -56,3 +60,36 @@ async def webhook(request: Request):
         logger.error(f"Error processing webhook: {e}")
     
     return {"status": "ok"}
+
+@app.post("/data-deletion")
+async def data_deletion(request: Request):
+    body = await request.body()
+    data = json.loads(body)
+
+    signed_request = data.get("signed_request", "")
+    parts = signed_request.split(".", 1)
+    if len(parts) != 2:
+        return Response(status_code=400)
+
+    encoded_sig, payload = parts
+    # Decode und verifiziere Signatur
+    import base64
+    sig = base64.urlsafe_b64decode(encoded_sig + "==")
+    expected_sig = hmac.new(
+        Config.APP_SECRET.encode(), payload.encode(), hashlib.sha256
+    ).digest()
+
+    if not hmac.compare_digest(sig, expected_sig):
+        return Response(status_code=403)
+
+    decoded = json.loads(base64.urlsafe_b64decode(payload + "=="))
+    user_id = decoded.get("user_id")
+
+    if user_id:
+        delete_user_data(user_id)
+
+    confirmation_code = hashlib.sha256(f"{user_id}-deleted".encode()).hexdigest()[:12]
+    return JSONResponse({
+        "url": f"{Config.BASE_URL}/deletion-status?code={confirmation_code}",
+        "confirmation_code": confirmation_code
+    })

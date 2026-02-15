@@ -84,3 +84,9 @@ def clear_session(phone):
     # Reset auf START, behalte aber Sprache bei, wenn möglich
     _, _, lang = get_session(phone)
     update_session(phone, "START", {}, lang or "en")
+
+def delete_user_data(phone):
+    db = get_db()
+    db.execute("DELETE FROM sessions WHERE phone = ?", (phone,))
+    db.execute("DELETE FROM leads WHERE phone = ?", (phone,))
+    db.commit()

@@ -8,6 +8,8 @@ class Config:
     WHATSAPP_TOKEN = os.getenv("WHATSAPP_TOKEN")
     PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
     VERIFY_TOKEN = os.getenv("VERIFY_TOKEN")
+    APP_SECRET = os.getenv("APP_SECRET")
+    BASE_URL = os.getenv("BASE_URL", "https://localhost")
     
     # Owner Info
     OWNER_NAME = os.getenv("OWNER_NAME", "Alexander")
