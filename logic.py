@@ -2,9 +2,9 @@ import httpx
 import re
 import asyncio
 from config import Config
-from database import get_session, update_session, get_db, clear_session
+from database import get_session, update_session, get_db, clear_session, log_sent_email, delete_user_data
 from localization import get_msg, resolve_command, detect_language
-from email_service import send_lead_email
+from email_service import send_lead_email, send_privacy_email
 
 URL = f"https://graph.facebook.com/v18.0/{Config.PHONE_NUMBER_ID}/messages"
 
@@ -63,11 +63,17 @@ async def handle_message(phone, text, msg_id, profile_name="Gast"):
     
     if command == "CONTACT":
         return await send_wa(phone, get_msg("menu_contact_text", lang))
-        
+
+    if command == "PRIVACY":
+        btns = [get_msg("btn_delete_yes", lang), get_msg("btn_delete_no", lang)]
+        await send_wa(phone, get_msg("privacy_confirm", lang), btns)
+        update_session(phone, "CONFIRM_DELETE", ctx, lang)
+        return
+
     if command == "START":
         step = "START"
         ctx = {}
-    
+
     if command == "HELP":
         step = "START"
 
@@ -179,6 +185,20 @@ async def handle_message(phone, text, msg_id, profile_name="Gast"):
             else:
                 await send_wa(phone, get_msg("phone_invalid", lang))
 
+        case "CONFIRM_DELETE":
+            if text_clean == get_msg("btn_delete_yes", lang):
+                lead_data = delete_user_data(phone)
+                if lead_data:
+                    lead_data["phone"] = phone
+                    lead_data["trigger"] = "User via /datenschutz bot command"
+                    await send_privacy_email("deletion_request", lead_data)
+                    await send_wa(phone, get_msg("privacy_deleted", lang))
+                else:
+                    await send_wa(phone, get_msg("privacy_no_data", lang))
+            else:
+                await send_wa(phone, get_msg("privacy_cancelled", lang))
+                clear_session(phone)
+
         case "COMPLETED":
             await send_wa(phone, get_msg("completed_hint", lang))
 
@@ -210,7 +230,9 @@ async def finalize_lead(phone, ctx, lang):
     db.commit()
 
     ok, reason = await send_lead_email(ctx, lang)
-    if not ok:
+    if ok:
+        log_sent_email(phone, ctx.get("name"), ctx.get("email"), ctx.get("reason"))
+    else:
         await send_wa(phone, get_msg("email_send_failed", lang, REASON=reason))
 
     await send_wa(phone, get_msg("final_success", lang, NAME=ctx.get("name")))

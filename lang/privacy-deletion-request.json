@@ -1,0 +1,6 @@
+{
+  "deletion_request": {
+    "subject": "Deletion Request – Data of $NAME",
+    "body": "Deletion request received\n==============================\n\nPlease delete all emails containing data of the following user:\n\nName: $NAME\nEmail: $EMAIL\nPhone: $PHONE\n\nReason of original inquiry: $REASON\n\nTriggered by: $TRIGGER"
+  }
+}

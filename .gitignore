@@ -1,6 +1,8 @@
 __pycache__/
 .env
 data/*.db
+data/*.db-shm
+data/*.db-wal
 venv/
 .claude/settings.local.json
 legal/TERMS.md

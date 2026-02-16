@@ -7,10 +7,11 @@
     "START": ["start", "hallo", "moin", "hey"],
     "STOP": ["stop", "stopp", "abbrechen", "halt"],
     "HELP": ["help", "hilfe"],
-    "CONTACT": ["kontakt", "info"]
+    "CONTACT": ["kontakt", "info"],
+    "PRIVACY": ["datenschutz"]
   },
   "messages": {
-    "welcome": "Hallo $NAME! 👋\nHier ist der Assistent von $OWNER_NAME.\nIch nehme dein Anliegen auf.\n\nBefehle: /start, /stop, /kontakt",
+    "welcome": "Hallo $NAME! 👋\nHier ist der Assistent von $OWNER_NAME.\nIch nehme dein Anliegen auf.\n\nBefehle: /start, /stop, /kontakt, /datenschutz",
     "btn_msg": "Nachricht senden",
     "btn_contact": "Kontaktdaten",
     "menu_prompt": "Alles klar. Worum geht es kurz? (z.B. Projektanfrage, Jobangebot)",
@@ -35,6 +36,12 @@
     "final_success": "Vielen Dank, $NAME! Alles ist gespeichert. Ich melde mich bald.",
     "stop_msg": "🛑 Vorgang abgebrochen. Tippe /start für einen Neustart.",
     "completed_hint": "Deine Nachricht liegt uns bereits vor. Tippe /start für eine neue Anfrage.",
-    "email_send_failed": "Deine Anfrage wurde gespeichert, aber die Benachrichtigung konnte nicht zugestellt werden ($REASON). Wir kümmern uns darum."
+    "email_send_failed": "Deine Anfrage wurde gespeichert, aber die Benachrichtigung konnte nicht zugestellt werden ($REASON). Wir kümmern uns darum.",
+    "privacy_confirm": "Möchtest du wirklich alle deine gespeicherten Daten löschen lassen?",
+    "btn_delete_yes": "Ja, alles löschen",
+    "btn_delete_no": "Abbrechen",
+    "privacy_deleted": "Deine Daten wurden gelöscht. Tippe /start falls du erneut schreiben möchtest.",
+    "privacy_no_data": "Es sind keine Daten von dir gespeichert.",
+    "privacy_cancelled": "Löschvorgang abgebrochen."
   }
 }

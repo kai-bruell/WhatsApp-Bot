@@ -1,4 +1,16 @@
 services:
+  protonmail-bridge:
+    image: ghcr.io/videocurio/proton-mail-bridge:latest
+    container_name: protonmail-bridge
+    volumes:
+      - protonmail-data:/root
+    ports:
+      - "127.0.0.1:12025:25/tcp"
+      - "127.0.0.1:12143:143/tcp"
+    restart: unless-stopped
+    networks:
+      - botnet
+
   bot:
     build: .
     env_file: .env
@@ -6,4 +18,14 @@ services:
       - "8000:8000"
     volumes:
       - ./data:/app/data
+    depends_on:
+      - protonmail-bridge
     restart: always
+    networks:
+      - botnet
+
+volumes:
+  protonmail-data:
+
+networks:
+  botnet:

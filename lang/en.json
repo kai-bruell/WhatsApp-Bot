@@ -7,10 +7,11 @@
     "START": ["start", "hello", "hi"],
     "STOP": ["stop", "cancel", "quit"],
     "HELP": ["help"],
-    "CONTACT": ["contact"]
+    "CONTACT": ["contact"],
+    "PRIVACY": ["privacy"]
   },
   "messages": {
-    "welcome": "Hello $NAME! 👋\nI am $OWNER_NAME's assistant.\n\nCommands: /start, /stop, /contact",
+    "welcome": "Hello $NAME! 👋\nI am $OWNER_NAME's assistant.\n\nCommands: /start, /stop, /contact, /privacy",
     "btn_msg": "Send Message",
     "btn_contact": "Contact Info",
     "menu_prompt": "Sure. What is it about? (e.g. Project, Job offer)",
@@ -35,6 +36,12 @@
     "final_success": "Thank you, $NAME! Everything is saved. I'll get back to you soon.",
     "stop_msg": "🛑 Stopped. Type /start to restart.",
     "completed_hint": "We already have your message. Type /start to create a new one.",
-    "email_send_failed": "Your request was saved, but the notification could not be delivered ($REASON). We'll take care of it."
+    "email_send_failed": "Your request was saved, but the notification could not be delivered ($REASON). We'll take care of it.",
+    "privacy_confirm": "Do you really want to delete all your stored data?",
+    "btn_delete_yes": "Yes, delete all",
+    "btn_delete_no": "Cancel",
+    "privacy_deleted": "Your data has been deleted. Type /start if you want to reach out again.",
+    "privacy_no_data": "No data found for your account.",
+    "privacy_cancelled": "Deletion cancelled."
   }
 }

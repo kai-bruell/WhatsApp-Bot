@@ -1,5 +1,6 @@
 import sqlite3
 import json
+from datetime import datetime, timedelta
 from config import Config
 
 def get_db():
@@ -52,6 +53,22 @@ def init_db():
         pass
     
     db.execute("CREATE TABLE IF NOT EXISTS processed_messages (msg_id TEXT PRIMARY KEY, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)")
+
+    # Email Log für DSGVO-Tracking
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS email_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            phone TEXT NOT NULL,
+            lead_name TEXT,
+            lead_email TEXT,
+            reason TEXT,
+            sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            delete_by DATETIME,
+            deletion_requested INTEGER DEFAULT 0,
+            deletion_requested_at DATETIME
+        )
+    """)
+
     db.commit()
 
 def is_msg_processed(msg_id):
@@ -85,8 +102,33 @@ def clear_session(phone):
     _, _, lang = get_session(phone)
     update_session(phone, "START", {}, lang or "en")
 
+def log_sent_email(phone, name, email, reason):
+    db = get_db()
+    delete_by = (datetime.utcnow() + timedelta(seconds=Config.DATA_RETENTION_SECONDS)).strftime("%Y-%m-%d %H:%M:%S")
+    db.execute(
+        "INSERT INTO email_log (phone, lead_name, lead_email, reason, delete_by) VALUES (?, ?, ?, ?, ?)",
+        (phone, name, email, reason, delete_by)
+    )
+    db.commit()
+
+def mark_deletion_requested(phone):
+    db = get_db()
+    now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    db.execute(
+        "UPDATE email_log SET deletion_requested = 1, deletion_requested_at = ? WHERE phone = ?",
+        (now, phone)
+    )
+    db.commit()
+
 def delete_user_data(phone):
     db = get_db()
+    # Lead-Daten holen bevor sie gelöscht werden
+    lead = db.execute("SELECT name, email, reason FROM leads WHERE phone = ?", (phone,)).fetchone()
+    lead_data = dict(lead) if lead else None
+
     db.execute("DELETE FROM sessions WHERE phone = ?", (phone,))
     db.execute("DELETE FROM leads WHERE phone = ?", (phone,))
+    mark_deletion_requested(phone)
     db.commit()
+
+    return lead_data

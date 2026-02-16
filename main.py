@@ -1,8 +1,11 @@
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 from database import init_db, is_msg_processed, delete_user_data
+from email_service import send_privacy_email
+from cleanup import run_scheduler
 from logic import handle_message
 from config import Config
+import asyncio
 import hashlib
 import hmac
 import json
@@ -14,8 +17,9 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 
 @app.on_event("startup")
-def startup():
+async def startup():
     init_db()
+    asyncio.create_task(run_scheduler())
 
 @app.get("/webhook")
 async def verify(request: Request):
@@ -86,7 +90,11 @@ async def data_deletion(request: Request):
     user_id = decoded.get("user_id")
 
     if user_id:
-        delete_user_data(user_id)
+        lead_data = delete_user_data(user_id)
+        if lead_data:
+            lead_data["phone"] = user_id
+            lead_data["trigger"] = "Meta data-deletion callback"
+            await send_privacy_email("deletion_request", lead_data)
 
     confirmation_code = hashlib.sha256(f"{user_id}-deleted".encode()).hexdigest()[:12]
     return JSONResponse({
