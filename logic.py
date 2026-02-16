@@ -229,6 +229,11 @@ async def finalize_lead(phone, ctx, lang):
     """, (phone, ctx.get("name"), ctx.get("email"), ctx.get("reason"), contact_num, call_optin, lang))
     db.commit()
 
+    # Session SOFORT auf COMPLETED setzen, BEVOR async-Operationen starten.
+    # Verhindert dass ein zweiter Webhook während send_lead_email()
+    # nochmal finalize_lead auslöst (Race-Condition).
+    update_session(phone, "COMPLETED", {}, lang)
+
     ok, reason = await send_lead_email(ctx, lang)
     if ok:
         log_sent_email(phone, ctx.get("name"), ctx.get("email"), ctx.get("reason"))
@@ -236,4 +241,3 @@ async def finalize_lead(phone, ctx, lang):
         await send_wa(phone, get_msg("email_send_failed", lang, REASON=reason))
 
     await send_wa(phone, get_msg("final_success", lang, NAME=ctx.get("name")))
-    update_session(phone, "COMPLETED", {}, lang)

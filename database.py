@@ -111,14 +111,6 @@ def log_sent_email(phone, name, email, reason):
     )
     db.commit()
 
-def mark_deletion_requested(phone):
-    db = get_db()
-    now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-    db.execute(
-        "UPDATE email_log SET deletion_requested = 1, deletion_requested_at = ? WHERE phone = ?",
-        (now, phone)
-    )
-    db.commit()
 
 def delete_user_data(phone):
     db = get_db()
@@ -128,7 +120,13 @@ def delete_user_data(phone):
 
     db.execute("DELETE FROM sessions WHERE phone = ?", (phone,))
     db.execute("DELETE FROM leads WHERE phone = ?", (phone,))
-    mark_deletion_requested(phone)
-    db.commit()
 
+    # Lösch-Anfrage markieren (gleiche Connection, ein Commit)
+    now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    db.execute(
+        "UPDATE email_log SET deletion_requested = 1, deletion_requested_at = ? WHERE phone = ?",
+        (now, phone)
+    )
+
+    db.commit()
     return lead_data
